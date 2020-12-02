@@ -23,6 +23,7 @@ export default class Tick extends Component {
 
             if(this.state.left === 0){
                 clearInterval(this.timer);
+                props.onOver && props.onOver();
             }
 
         },1000)
