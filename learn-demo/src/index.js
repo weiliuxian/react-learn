@@ -5,13 +5,16 @@ import ReactDOM from 'react-dom';
 // import BallList from './components/BallList'
 // import MyComp from './components//MyComp'
 // import TickControl from './components/TickControl'
-import Pager from './components/Pager'
-import PagerTest from './components/PagerTest'
+// import Pager from './components/Pager'
+// import PagerTest from './components/PagerTest'
+import Comp from './components/Comp'
 
 
 const container = document.getElementById('root');
+ReactDOM.render(<Comp />,container)
+
 // ReactDOM.render(<Pager current={1} total={100} limit={9} panelNumber={5} />,container)
-ReactDOM.render(<PagerTest />,container)
+// ReactDOM.render(<PagerTest />,container)
 
 // function handle(){
 //     console.log('点击了')

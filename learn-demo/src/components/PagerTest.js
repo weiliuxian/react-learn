@@ -12,7 +12,7 @@ export default class PagerTest extends Component {
     }
     constructor(props){
         super(props);
-        this.fetchStudents();
+        this.fetchStudents(this.state.current);
     }
 
     async fetchStudents() {
@@ -28,8 +28,10 @@ export default class PagerTest extends Component {
     handlePageChange = (newPage) => {
         this.setState({
             current: newPage
+        }, () => {
+            this.fetchStudents();
         })
-        this.fetchStudents();
+        
     }
     render() {
         return (
