@@ -7,11 +7,13 @@ import ReactDOM from 'react-dom';
 // import TickControl from './components/TickControl'
 // import Pager from './components/Pager'
 // import PagerTest from './components/PagerTest'
-import Comp from './components/Comp'
+// import Comp1 from './components/Comp1'
+import App from './App'
 
 
 const container = document.getElementById('root');
-ReactDOM.render(<Comp />,container)
+// ReactDOM.render((<Modal><h1>fhjkdfhd000jk</h1></Modal>),container)
+ReactDOM.render((<App/>),container)
 
 // ReactDOM.render(<Pager current={1} total={100} limit={9} panelNumber={5} />,container)
 // ReactDOM.render(<PagerTest />,container)
