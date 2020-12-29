@@ -14,7 +14,7 @@ class Option extends Component {
         )
     }
 }
-const Options = withDataList(Option)
+const Options = withDataList(Option)   // 返回新的组件，该组件接收的props包含datas
 
 export default class Select extends Component {
     static propTypes = {
@@ -23,6 +23,7 @@ export default class Select extends Component {
         onChange: PropTypes.func
     }
     render() {
+
         return (
             <select name={this.props.name} value={this.props.value} onChange={
                 (e) => this.props.onChange && this.props.onChange(e.target.value)

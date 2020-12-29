@@ -5,9 +5,10 @@ import React from 'react'
  * @param {*} Comp 组件
  */
 export default function withLog(Comp) {
-    return class LogWrapper extends React.Component {
+   class LogWrapper extends React.Component {
 
         componentDidMount() {
+            console.log('aRef',this.props.ref1)
             console.log(`日志： 组件${Comp.name}被创建了，${Date.now()}`)
         }
         componentWillUnmount() {
@@ -15,7 +16,12 @@ export default function withLog(Comp) {
         }
 
         render() {
-            return <Comp {...this.props} />
+            const {ref1,...reset} = this.props
+            return <Comp {...reset} ref={ref1} />
         }
     }
+
+    return React.forwardRef((props,ref) => {
+        return <LogWrapper {...props} ref1={ref}/>
+    })
 }

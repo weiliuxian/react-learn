@@ -21,3 +21,9 @@ datas = [
 3. value: 数组，表示当前选中的value
 
 4. onChange：当选中项发生改变时的事件
+
+
+hoc过程：
+1、 Test.js   传递datas
+2、 Select组件接收props.datas,然后传递给HOC生成的新的组件DataGroupWrapper
+3、 DataGroupWrapper组件接收props.datas, 循环props.datas.map,映射生成组件列表，传递给每个组件info(包含value和text)

@@ -1,7 +1,6 @@
 // 根据数据渲染出的一组表单组件
 import React from 'react'
 import types from '../../../utils/commonTypes'
-
 export default function withDataList(Comp){
     return class DataGroupWrapper extends React.Component {
         static defaultProps = {
@@ -13,6 +12,8 @@ export default function withDataList(Comp){
 
         render() {
             const comps = this.props.datas.map(it => <Comp key={it.value} info={it} {...this.props} />)
+
+            console.log('comps',comps)
             return (
                 <>
                     {comps}

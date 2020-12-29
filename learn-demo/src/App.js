@@ -10,11 +10,14 @@ import { A, B } from './components/Comps'
 import withLog from './HOC/withLog'
 import withLogin from './HOC/withLogin'
 
-let ALog1 = withLogin(A);
-ALog1 = withLog(ALog1);
+import BannerTest from './components/common/Banner/Test'
+const aRef = React.createRef();
+let ALog1 = withLog(A);
+// ALog1 = withLog(ALog1);
 let BLog1 = withLogin(B);
 BLog1 = withLog(BLog1);
 export default function APP() {
+
     return (
         <div>
            {/* <ThreeLayout
@@ -45,8 +48,10 @@ export default function APP() {
 
             {/* <ValidationComp a={1} b c={2} d={<div>wtwerew</div>} F={Select} i={{name:'dsfsdf',age:10}}/> */}
 
-            <ALog1 a={1} isLogin={true}/>
+            <ALog1 a={1} isLogin={true} ref={aRef}/>
             <BLog1 b={1} isLogin={true} />
+
+            <BannerTest />
         
 
         </div>

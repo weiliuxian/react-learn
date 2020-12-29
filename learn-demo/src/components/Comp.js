@@ -20,6 +20,7 @@ export default class Comp extends Component {
         })
         
     }
+    
     render() {
         console.log('render',this.state.n)
         return (
