@@ -11,6 +11,7 @@ import withLog from './HOC/withLog'
 import withLogin from './HOC/withLogin'
 
 import BannerTest from './components/common/Banner/Test'
+import NewContext from './NewContext'
 const aRef = React.createRef();
 let ALog1 = withLog(A);
 // ALog1 = withLog(ALog1);
@@ -52,6 +53,10 @@ export default function APP() {
             <BLog1 b={1} isLogin={true} />
 
             <BannerTest />
+
+            <div>
+                <NewContext />
+            </div>
         
 
         </div>
