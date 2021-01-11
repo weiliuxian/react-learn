@@ -9,6 +9,7 @@ import Select from './components/common/Select/Test'
 import { A, B } from './components/Comps'
 import withLog from './HOC/withLog'
 import withLogin from './HOC/withLogin'
+import TestFrom from './components/common/Form/Test'
 
 import BannerTest from './components/common/Banner/Test'
 import NewContext from './NewContext'
@@ -56,6 +57,11 @@ export default function APP() {
 
             <div>
                 <NewContext />
+            </div>
+
+
+            <div>
+                <TestFrom />
             </div>
         
 
