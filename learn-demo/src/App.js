@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 // import ThreeLayout from './components/common/ThreeLayout'
 // import NumberInput from './components/NumberInput'
 // import FormTest from './components/FormTest'
@@ -13,12 +13,14 @@ import TestFrom from './components/common/Form/Test'
 import TaskContainer from './components/TaskContainer'
 
 import BannerTest from './components/common/Banner/Test'
+import StuContainer from './components/StudentListHook/Container'
 import NewContext from './NewContext'
 const aRef = React.createRef();
 let ALog1 = withLog(A);
 // ALog1 = withLog(ALog1);
 let BLog1 = withLogin(B);
 BLog1 = withLog(BLog1);
+
 export default function APP() {
 
     return (
@@ -40,7 +42,9 @@ export default function APP() {
             </div>
 
             <hr /> */}
-
+            <div>
+                <StuContainer/>
+            </div>
             {/* <div> */}
                 <CheckBoxGroupTest />
             {/* </div> */}
