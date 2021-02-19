@@ -490,3 +490,52 @@ function Test(props,ref) {
 
 - 如果不给依赖项，则每次运行函数组件都会调用该方法
 - 如果给了依赖项，则第一次调用后会进行缓存，只有依赖项发生变化才会重新调用函数
+
+### React 动画     react-transition-group
+
+#### SwitchTransition
+
+用于有秩序的切换内部的组件
+
+默认情况下：out-in
+
+1. 当key值发生改变时，会将之前的DOM根元素添加退出样式（exit，exit-active）
+2. 退出完成后，将该DOM元素移除
+3. 重新渲染内部DOM元素
+4. 为新渲染的DOM 根元素添加进入样式（enter，enter-active，enter-done）
+
+```react
+import React,{useState} from 'react'
+import {SwitchTransition,CSSTransition} from 'react-transition-group'
+import './App.css'
+import 'animate.css'
+
+
+export default function App() {
+  const [show1, setShow1] = useState(true)
+  return (
+    <div className="container">
+      <SwitchTransition mode="out-in">
+        <CSSTransition appear timeout={800} key={show1} classNames={{
+          exit: 'animate__bounceOut',
+          enter: 'animate__bounceIn'
+        }}>
+          <h1 className="animate__animated animate__slower">
+            {show1?'title1': 'title2'}
+          </h1>
+        </CSSTransition>
+      </SwitchTransition>
+      <button onClick={() => setShow1(!show1)}>切换</button>
+    </div>
+  )
+}
+```
+
+in-out:
+
+1. 重新渲染内部DOM元素，保留之前的元素
+2. 为新渲染的DOM 根元素添加进入样式（enter，enter-active，enter-done）
+3. 将之前的DOM元素添加退出样式（exit，exit-active）
+4. 退出完成后，将该DOM元素移除
+
+> 该库寻找dom元素的方式，是使用已经过时的API：findDomNode，该方法可以找到某个组件下面的DOM根元素

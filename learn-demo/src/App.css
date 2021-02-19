@@ -1,0 +1,15 @@
+.container {
+  width: 100px;
+  margin: 0 auto;
+}
+/* .exit {
+  opacity: 0;
+  transition: 800ms;
+}
+.enter {
+  opacity: 0;
+}
+.enter-active {
+  opacity: 1;
+  transition: 800ms;
+} */

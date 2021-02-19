@@ -1,79 +1,63 @@
-import React, { useState } from 'react'
-// import ThreeLayout from './components/common/ThreeLayout'
-// import NumberInput from './components/NumberInput'
-// import FormTest from './components/FormTest'
-import CheckBoxGroupTest from './components/common/CheckBoxGroup/Test'
-import RadioBoxGroupTest from './components/common/RadioBoxGroup/Test'
-import Select from './components/common/Select/Test'
-// import ValidationComp from './components/ValidationComp'
-import { A, B } from './components/Comps'
-import withLog from './HOC/withLog'
-import withLogin from './HOC/withLogin'
-import TestFrom from './components/common/Form/Test'
-import TaskContainer from './components/TaskContainer'
+import React,{useState} from 'react'
+import {SwitchTransition, TransitionGroup} from 'react-transition-group'
+import FadeTransition from'./components/common/FadeTransition'
+import { v4 as uuidv4 } from 'uuid';
 
-import BannerTest from './components/common/Banner/Test'
-import StuContainer from './components/StudentListHook/Container'
-import NewContext from './NewContext'
-const aRef = React.createRef();
-let ALog1 = withLog(A);
-// ALog1 = withLog(ALog1);
-let BLog1 = withLogin(B);
-BLog1 = withLog(BLog1);
-
-export default function APP() {
-
+class App extends React.Component {
+  state = {
+    show: true,
+    tasks: [
+      {
+        id: uuidv4(),
+        name: '任务1'
+      },
+      {
+        id: uuidv4(),
+        name: '任务2'
+      },
+      {
+        id: uuidv4(),
+        name: '任务3'
+      }
+    ]
+  }
+  render() {
     return (
-        <div>
-           {/* <ThreeLayout
-            left={<div>左边栏</div>}
-            right={<div>右边栏</div>}
-        >
-               <div style={{
-                   border: '1px solid red'
-               }}>
-                   <h1>主区域</h1>
-               </div>
-            </ThreeLayout> 
-            <NumberInput />
-            <hr/>
-            <div>
-                <FormTest />
-            </div>
-
-            <hr /> */}
-            <div>
-                <StuContainer/>
-            </div>
-            {/* <div> */}
-                <CheckBoxGroupTest />
-            {/* </div> */}
-
-            <RadioBoxGroupTest />
-
-            <Select />
-
-            {/* <ValidationComp a={1} b c={2} d={<div>wtwerew</div>} F={Select} i={{name:'dsfsdf',age:10}}/> */}
-
-            <ALog1 a={1} isLogin={true} ref={aRef}/>
-            <BLog1 b={1} isLogin={true} />
-
-            <BannerTest />
-
-            <div>
-                <NewContext />
-            </div>
+      <div>
+        <SwitchTransition>
+          <FadeTransition appear key={this.state.show} timeout={500}>
+            <h1>{this.state.show? '显示': '隐藏'}</h1>
+          </FadeTransition>
+        </SwitchTransition>
+       
+        <button onClick={()=> this.setState({
+          show: !this.state.show
+        })} style={{marginBottom: 100}}>切换显示状态</button>
 
 
-            <div>
-                <TestFrom />
-            </div>
-        
-
-        <div>
-            <TaskContainer/>
-        </div>
-
-        </div>
+        <TransitionGroup component="ul">
+          {this.state.tasks.map(it =>  (
+          <FadeTransition appear key={it.id} timeout={300}>
+              <li>
+                {it.name} 
+                <button onClick={()=>{
+                  this.setState({
+                    tasks: this.state.tasks.filter(item => item.id !== it.id)
+                  })
+                }}>删除</button>
+              </li>
+          </FadeTransition>
+          ) )}
+        </TransitionGroup>
+        <button onClick={()=>{
+                var name = window.prompt('请输入任务名称')
+                this.setState({
+                  tasks: [...this.state.tasks, {id: uuidv4(), name}]
+                })
+              }}>添加</button>
+      </div>
     )
+  }
 }
+
+export default App
