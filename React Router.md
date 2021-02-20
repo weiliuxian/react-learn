@@ -13,7 +13,7 @@
 
 我们把实现了以上两个功能的插件，称之为路由
 
-## React Router
+## 两个代码库
 
 1. react-router: 路由核心库，包含诸多和路由功能相关的核心代码
 2. react-router-dom： 利用路由核心库，结合实际页面，实现跟页面路由密切相关的功能
@@ -70,13 +70,11 @@ History表示浏览器的历史记录，它使用栈的方式存储
 
 - 根据页面的路径决定渲染哪个组件
 
-
-
-### 路由组件
+## 路由组件
 
 React-Router 为我们提供了两个重要的组件
 
-#### Router组件
+### Router组件
 
 它本身不做任何展示，仅提供路由模式配置，另外，该组件会产生一个上下文，上下文会提供一些实用的对象和方法，共其他相关组件使用
 
@@ -85,7 +83,7 @@ React-Router 为我们提供了两个重要的组件
 
 通常情况下，Router组件只有一个，该组件包裹整个页面
 
-#### Route组件
+### Route组件
 
 根据不同的地址展示不同的组件
 
@@ -95,6 +93,7 @@ React-Router 为我们提供了两个重要的组件
    1. 默认情况下，不区分大小写，可以设置sensitive为tru来区分大小写
    2. 默认情况下，只匹配初始目录，如果要精确匹配，配置exact属性为true
    3. 如果不写path，则会匹配任意路径
+   4. 跟组件嵌套没有关系，匹配的都是完整路径
 2. component：匹配成功后要显示的组件
 3. children: 
    1. 传递React元素，无论是否匹配，一定会显示children，并且会忽略component属性
@@ -102,8 +101,99 @@ React-Router 为我们提供了两个重要的组件
 
 Route组件可以写到任意的地方，只要保证它是Router组件的后代元素
 
-#### Switch组件
+### Switch组件
 
 写到Switch组件中Route组件，当匹配到第一个Route后，会立即停止
 
 由于switch组件会循环所有子元素，然后让每个子元素去完成匹配，若匹配到，则渲染对应的组件，然后停止匹配，因此，不能在switch的子元素中使用除Route外的其他组件
+
+
+
+## 路由信息
+
+Router组件会创建一个上下文，并且向上下文注入一些信息
+
+该上下文对开发者是隐藏的，Route组件若匹配到了地址，则会将这些上下文中的信息作为属性传入对应的组件
+
+### history
+
+它并不是window.history对象，我们利用该对象无刷新跳转地址
+
+**为什么没有直接使用history对象**
+
+1. React-Router中有两种模式： hash、hisroty，如果直接使用window.history，只能支持一种模式
+2. 当使用window.history.pushState方法时，没有办法收到任何通知，将导致react无法知晓地址发生 了改变，结果导致无法重新渲染组件
+
+- push： 将某个新的地址入栈（历史记录栈）
+  1. 参数1：新的地址
+  2. 参数2： 可选，附带的状态数据
+- replace：将某个新的地址替换当前栈中的地址
+- go：与window.history完全一致
+- forward：与window.history完全一致
+- back：与window.history完全一致
+
+### location
+
+与history.location完全一致，是同一个对象但是，与window.location不同
+
+location对象中记录了当前地址的相关信息
+
+我们通常使用第三方库：query-string，用于解析地址栏中的数据
+
+### match
+
+该对象中保存了路由匹配的信息
+
+- isExact：事实上，当前的路径和路由配置的路径是否是精确匹配的
+
+- params：获取路径规则中对应的数据
+
+  ```react
+  import React from 'react'
+  import {BrowserRouter as Router,Route,Switch} from 'react-router-dom'
+  // /a
+  function A(props){
+    return <div>
+      <p>新闻：</p>
+    </div>
+  }
+  
+  export default function App(){
+    return (
+      <Router>
+        <Switch>
+          <Route path="/news/:year/:month/:day" component={A}/>
+        </Switch>
+      </Router>
+    )
+  }
+  
+  1.路径： /news/2019/8/6
+  2.格式是多变的，不一定是斜杠： /news-2019-8-6 <=> path="/news-:year-:month-:day"
+  3.可传可不传，字段后面添加问号： path="/news/:year?/:month?/:day?" 
+  4.对字段进行约束，正则表达式： path="/news/:year(\d+)/:month(\d+)/:day(\d+)" 
+  5.后面还有任意字符： path="/news/:year(\d+)/:month(\d+)/:day(\d+)/*"  后面得添加字符，否则组件无法渲染，因为路径不匹配
+      
+  ```
+
+- path：Route的path属性
+
+- url：页面路径
+
+实际上，在书写Route组件的path属性时，可以书写一个string pattern(字符串正则)
+
+react-router使用了第三方库：Path-to-RegExp，该库的作用是将一个字符串正则转换成一个真正的正则表达式
+
+**向某个页面传递数据的方式：**
+
+1. 利用state： 在push页面时，加入state
+2. **利用search：把数据填写到地址栏中的？后**
+3. 利用hash：把数据填写到hash后
+4. **利用params：把数据填写到路径中**
+
+### 非路由组件获取路由信息
+
+某些组件，并没有直接放到Route中，而是嵌套在其他普通组件中，因此，它的props没有路由信息，如果这些组件需要获取路由信息，可以使用下面两种方式：
+
+1. 将路由信息从父组件一层一层传递到子组件
+2. 使用react-router提供的高阶组件withRouter，包装要使用的组件，该高阶组件会返回新组件，新组件将向提供的组件注入路由信息
