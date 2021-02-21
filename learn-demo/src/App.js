@@ -1,9 +1,9 @@
 import React from 'react'
 import {BrowserRouter as Router,Route,Switch} from 'react-router-dom'
 // /a
-function A(props){
+function PageA(props){
   return <div>
-    <p>新闻：</p>
+    PageA
   </div>
 }
 
