@@ -6,7 +6,7 @@ class Layout extends Component {
   static propTypes = {
     header: Proptypes.element,
     aside: Proptypes.element,
-    children: Proptypes.element
+    children: Proptypes.node
   }
   render() {
     return (
