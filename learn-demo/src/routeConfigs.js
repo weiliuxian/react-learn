@@ -7,26 +7,33 @@ import NewHome from './NewHome'
 export default [
   {
     path: '/',
-    component: Home
+    exact:true,
+    component: Home,
+    name: 'home'
   },
   {
     path: '/news',
     component: New,
+    name: 'news',
+    // exact:true,
     children: [
       {
         path: '/',
         exact:true,
-        component: NewHome
+        component: NewHome,
+        name: 'newsHome'
       },
       {
         path: '/detail',
         exact:true,
-        component: NewDetail
+        component: NewDetail,
+        name: 'newsDetail'
       },
       {
         path: '/search',
         exact:true,
-        component: NewSearch
+        component: NewSearch,
+        name: 'newsSearch'
       }
     ]
   },

@@ -1,14 +1,25 @@
 import React from 'react'
-import {Route} from 'react-router-dom'
+import {Route,Switch} from 'react-router-dom'
 import routeConfigs from './routeConfigs'
 /**
  * 根据路由配置数组，遍历该数组，得到一组Route组件
  * @param {} routes 
  */
-function getRoutes(routes){
-  return routes.map((rt,i) => (
-    <Route key={i} {...rt} />
-  ))
+function getRoutes(routes,basePath){
+  if(!Array.isArray(routes)){
+    return null
+  }
+  const rs = routes.map((rt,i) =>{
+    const {children, component:Component, path, name, ...rest} = rt
+    let newPath = `${basePath}${path}`
+    newPath = newPath.replace(/\/\//g, '/')
+    return  <Route key={i} {...rest} path={newPath} render={values => {
+      return  <Component {...values}>
+                {getRoutes(rt.children,newPath)}
+              </Component>
+    }} />
+  })
+  return <Switch>{rs}</Switch>
 }
 
 /**
@@ -17,9 +28,7 @@ function getRoutes(routes){
 export default function RootRouter(){
   return (
     <>
-      {/* <Route path="/" exact component={Home} />
-      <Route path="/news" exact component={New} /> */}
-      {getRoutes(routeConfigs)}
+      {getRoutes(routeConfigs,'/')}
     </>
   )
 }
