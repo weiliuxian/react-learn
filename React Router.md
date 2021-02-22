@@ -98,6 +98,10 @@ React-Router 为我们提供了两个重要的组件
 3. children: 
    1. 传递React元素，无论是否匹配，一定会显示children，并且会忽略component属性
    2. 传递一个函数，该函数有多个参数，这些参数来自于上下文，该函数返回react元素，则一定会显示返回的元素，并且忽略component属性
+4. render: 函数，返回可渲染的东西，有个一个参数，该参数可以获取路由上下文信息
+5. children和render的区别：
+   1. render是匹配后才会运行
+   2. children是无论是否匹配都会运行
 
 Route组件可以写到任意的地方，只要保证它是Router组件的后代元素
 
@@ -245,3 +249,139 @@ react-router使用了第三方库：Path-to-RegExp，该库的作用是将一个
 - exact： 是否精确匹配from
 - sensitive：匹配时from是否区分大小写
 - strict：from是否严格匹配最后一个斜杠
+
+
+
+## 嵌套路由
+
+都是由自定义方法实现的，没有什么固定的模式
+
+1. 方式一：使用macth获取匹配信息
+
+```react
+function User({match}){
+  const pPath = match.url
+  return <div>
+    <h1>User固定区域</h1>
+    <p>
+    <Link to={`${pPath}/update`}>用户信息</Link>
+    <Link to={`${pPath}/pay`}>充值</Link>
+    </p>
+    <div style={{
+      width:500,
+      height:500,
+      border: '2px solid',
+      margin: 'o auto'
+    }}>
+      <Route path={`${pPath}/update`} component={UserUpdate} />
+      <Route path={`${pPath}/pay`} component={UserPay} />
+    </div>
+  </div>
+}
+```
+
+2. 自定义js文件
+
+   ```js
+   const config = {
+     user: {
+       root: '/user',
+       update: '/update',
+       pay: {
+         root: '/pay',
+         afterPay: '/before',
+         before: '/after'
+       },
+     }
+   }
+   function setConfig(obj,baseStr){
+     _setConfig(obj,baseStr)
+   }
+   /**
+    * 将该对象的每一个字符串属性，前面添加baseStr
+    * 如果属性名为root，则直接添加baseStr
+    * 如果属性名不是root，则添加baseStr再拼接root属性值
+    * 如果属性不是字符串，递归调用该方法
+    * @param {*} obj 
+    * @param {*} baseStr 
+    */
+   function _setConfig(obj,baseStr){
+     const newBaseUrl = baseStr + (obj.root === undefined ? '' : obj.root)
+     for (const prop in obj) {
+       if (Object.hasOwnProperty.call(obj, prop)) {
+         const value = obj[prop];
+         if(typeof value === 'string'){
+           if(prop === 'root'){
+             obj[prop] = baseStr + value
+           }else {
+             obj[prop] = newBaseUrl + value
+           }
+         }else {
+           _setConfig(obj[prop], newBaseUrl)
+         }
+         
+       }
+     }
+   }
+   setConfig(config,'')
+   
+   export default config
+   ```
+
+   处理完成结果如图：
+
+![image-20210222134403579](C:\Users\86151\AppData\Roaming\Typora\typora-user-images\image-20210222134403579.png)
+
+## 受保护的页面
+
+自定义路由组件，众多方法之一
+
+```react
+import React from 'react'
+import {Route,Redirect} from 'react-router-dom'
+import loginInfo from './loginInfo'
+export default function ProtectedRoute({component:Component,children,render,...rest}) {
+  return (
+    <Route {...rest} render={values => {
+      if(loginInfo.isLogin){
+        return <Component />
+      }
+      else {
+        // return <Redirect to={{
+        //   pathname: '/login',
+        //   search: '?returnurl=/personal'
+        // }} />
+        return <Redirect to={{
+          pathname: '/login',
+          state: values.location.pathname
+        }} />
+      }
+    }} />
+  )
+}
+
+使用
+function Login(props){
+  return <div>
+   <button onClick={() => {
+     loginInfo.login()
+     if(props.location.state){
+      props.history.push(props.location.state)
+     }else {
+        props.history.push('/')
+      }
+    // const query = qs.parse(props.location.search)
+    // if(query.returnurl){
+    //   props.history.push(query.returnurl)
+    // }else {
+    //   props.history.push('/')
+    // }
+   }}>登录</button>
+  </div>
+}
+
+受保护页面
+<ProtectedRoute path="/personal" component={Personnal}/>
+    
+```
+
