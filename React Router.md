@@ -385,3 +385,227 @@ function Login(props){
     
 ```
 
+
+
+## 路由导航守卫
+
+导航守卫：当离开一个页面，进入另一个页面时，触发的事件
+
+history对象：
+
+- listen：监听地址的变化，当地址发生变化时，会调用传递的函数
+  - 参数： 函数，函数参数有：
+    - 参数1： location对象，记录当前的地址信息
+    - 参数2：action，一个字符串，表示进入该地址的方式，取值有：
+      1. POP： 通过点击浏览器后退和前进、调用history.go、调用history.goBack、调用history.goForward，出栈（即当前页面指针发生了在现有页面来回移动）
+      2. PUSH： 点击无刷新的超链接、history.push，入栈（即添加了新页面，页面指针指向新的页面）
+      3. REPLACE: 替换，调用history.replace
+  - 函数运行时间点： 发生在即将跳转到新的页面时
+  - 返回结果： 函数，可以调用该函数取消监听
+- block：设置一个阻塞，并同时设置阻塞消息，当页面发生跳转时，会进入阻塞，并将阻塞消息传递到路由根组件Router的getUserConfirmation方法，如果设置阻塞时，getUserConfirmation没有做处理或者没有设置阻塞直接在getUserConfirmation方法写逻辑处理，无效，这两者是相互依赖的
+  - 字符串
+  - 函数： 函数返回结果时一个字符串，用于表示阻塞消息，也有两个参数：
+    1. location
+    2. action
+  - 返回结果： 函数，用于取消阻塞器
+
+
+
+路由根组件(Router)
+
+- getUserConfirmation，有两个参数：
+  - msg：阻塞消息
+  - callback：回调函数，调用该函数并传递true，则表示进入到新页面，否则，不做任何操作
+
+```react
+import React, { Component } from 'react'
+import { withRouter,BrowserRouter as Router} from 'react-router-dom'
+
+let preLocation, location, action, unBlock;
+
+class _GuardHelper extends Component {
+    componentDidMount() {
+        // 设置阻塞（只能设置一个）
+        unBlock = this.props.history.block((newLocation, ac)=>{
+            preLocation = this.props.location
+            location = newLocation
+            action = ac
+            return ''
+        })
+        // 添加一个监听器
+        this.unListen = this.props.history.listen((location,action) => {
+            const prevLocation = this.props.location
+            this.props.onChange && this.props.onChange(prevLocation, location, action, this.unListen)
+        })
+    }
+    componentWillUnmount(){
+        unBlock()
+        this.unListen()
+    }
+    render() {
+        return null
+    }
+}
+
+const GuardHelper = withRouter(_GuardHelper)
+
+class RouteGuard extends Component {
+   handleConfirm = (msg, callback) => {
+        if(this.props.onBeforeChange){
+            this.props.onBeforeChange(preLocation, location, action, callback, unBlock)
+        }else{
+            callback(true)
+        }
+    }
+    render() {
+        return  <Router getUserConfirmation={this.handleConfirm}>
+                    <GuardHelper onChange={this.props.onChange}/>
+                    {this.props.children}
+                </Router>
+    }
+}
+
+export default RouteGuard
+
+使用
+export default function App(){
+  return (
+    <RouteGuard
+      onBeforeChange={(preLocation, location, action, callback, unBlock) => {
+        console.log(`页面想要从${preLocation.pathname}跳转到${location.pathname},允许跳转`)
+        callback(true)
+      }}
+      onChange={(prevLocation,location,action,unListen) => {
+        console.log(`日志：从${prevLocation.pathname}进入页面${location.pathname},进入方式${action}`)
+      }}
+    >
+      <nav>
+        <Link to='/page1'>页面1</Link>
+        <Link to='/page2'>页面2</Link>
+      </nav>
+      <Route path="/page1" component={Page1} />
+      <Route path="/page2" component={Page2} />
+    </RouteGuard>
+  )
+}
+```
+
+
+
+## 常见应用 - 路由切换动画
+
+第三方动画库： react-transition-group
+
+```react
+import React from 'react'
+import {Route} from 'react-router-dom'
+import 'animate.css'
+import {CSSTransition} from 'react-transition-group'
+
+export default function TransitionRoute(props) {
+    const {component:Component,...rest} = props
+    return (
+        <Route {...rest}>
+            {props => {
+                return <CSSTransition
+                  in={props.match?true:false}
+                  timeout={2000}
+                  classNames={{
+                    enter: 'animate__animated animate__slow animate__fadeInRight',
+                    // enterActive: 'animate__fadeIn',
+                    exit: 'animate__animated animate__slow animate__fadeOutLeft',
+                    // exitActive: 'animate__fadeOut'
+                  }}
+                  mountOnEnter={true}
+                  unmountOnExit={true}
+                >
+                  <Component />
+                </CSSTransition>
+            }}
+          </Route>
+    )
+}
+```
+
+## 常见应用 - 滚动条复位
+
+常见方法：
+
+1. 高阶组件
+
+   ```react
+   import React from 'react'
+   
+   export default function widthScrollTop(Comp) {
+       return class ScrollTopWrapper extends React.Component {
+           componentDidMount() {
+               window.scrollTo(0,0)
+           }
+           render() {
+               return <Comp {...this.props} />
+           }
+       }
+   }
+   ```
+
+2. 使用useEffect
+
+   ```react
+   import {useEffect} from 'react'
+   import reset from './restScroll'
+   
+   export default function useScroll(pathname) {
+       useEffect(() => {
+           reset()
+       }, [pathname])
+   }
+   
+   restScroll.js
+   let timer1,timer2;
+   /**
+    * 滚动条横向和纵向动画复位
+    */
+   export default function resetScroll() {
+       clearInterval(timer1)
+       clearInterval(timer2)
+       var html = document.documentElement
+       timer1 = animate(html.scrollTop,0,(val) => {
+           html.scrollTop = val
+       })
+       timer2 = animate(html.scrollLeft,0,(val) => {
+           html.scrollLeft = val
+       })
+   }
+   
+   /**
+    * 在300毫秒之内从指定的初始值变化到结束值
+    * @param {*} start 
+    * @param {*} end 
+    */
+   function animate(start,end,callback) {
+       var tick = 16; // 每隔16毫秒完成一次变化
+       var total = 300;//总时间为1000毫秒
+       var times = Math.ceil(total / tick);//变化的次数
+       var curTimes = 0;
+       var dis = (end - start) / times; //每次运动的距离
+   
+       var timer = setInterval(()=>{
+           curTimes++
+           start += dis
+           if(curTimes === times){
+               start = end
+               clearInterval(timer)
+           }
+           callback(start)
+       },tick)
+       return timer
+   }
+   ```
+
+3. 使用自定义路由导航守卫： 主要是判断路径是否发生变化
+
+
+
+## 常见应用 - 阻止跳转
+
+添加阻塞，history.block，react已经提供该功能组件 Prompt

@@ -1,6 +1,9 @@
-.container {
-  width: 100px;
+.main {
+  width: 800px;
   margin: 0 auto;
+}
+.page-container {
+  position: relative;
 }
 /* .exit {
   opacity: 0;
