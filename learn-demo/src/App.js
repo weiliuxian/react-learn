@@ -8,6 +8,7 @@ export default function App(){
   return (
     <div className="main">
       <Router>
+        3333
         <Pages.NavBar />
         <div className="page-container">
           <TransitionRoute  path="/" exact component={Pages.Home} />
