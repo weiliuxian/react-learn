@@ -18,7 +18,7 @@
 
 history对象共同的特点： 维护了一个地址栈
 
-第三方库： history
+第三方库： history（版本不同，用法貌似有差异）
 
 **以下三个函数，虽然名称和参数不同，但返回的对象结构（history）完全一致**
 
@@ -44,6 +44,10 @@ history对象共同的特点： 维护了一个地址栈
         3. REPLACE: 调用history.replace
   2. 该函数有一个返回值，返回的是一个函数，用于取消监听
 - block：函数，用于设置一个阻塞，当页面发生跳转时，会将指定的消息传到getUserConfirmation，并调用getUserConfirmation函数
+  1. 该函数接收一个字符串作为参数，表示消息内容，也可以接收一个函数作为参数，函数返回值是消息内容
+  2. 当接收函数作为参数时，该参数函数也有两个传参，分别是location、action
+  3. block函数会返回一个取消函数，调用该取消函数可以解除阻塞
+- createHref：basename + url，调用该函数，传入location，可以得到完整的路径
 
 ### createBrowserHistory 
 
@@ -63,6 +67,50 @@ go:  导致刷新页面
 
 创建了一个使用浏览器hash的history对象
 
+配置对象：
+
+- basename:  设置根路径
+- hashType: #号后给定的路径格式
+  1. hashbang：被chrome弃用， 格式：#!根路径
+  2. noslash：#a/b/c
+  3. slash：#/a/b/c
+
 ### createMemoryHistory 
 
 创建了一个使用内存中的地址栈的history对象
+
+创建一个使用内存中的地址栈的history对象，一般用于没有地址栏的环境
+
+配置对象：
+
+```react
+import {createMemoryHistory} from 'history'
+
+window.hashH = createMemoryHistory({
+  initialEntries: ['/','/abc'],  // 初始数组内容
+  initialIndex: 0, // 默认指针指向的数组的下标
+})
+```
+
+## 手写createBrowserHistory
+
+### 创建location
+
+state处理：
+
+```js
+var historyState = window.history.state
+```
+
+- 如果historyState没有值，则state为undefined
+- 如果historyState有值，
+  1. 如果值的类型不是对象，直接赋值
+  2. 是对象
+     1. 该对象中有key属性，将key属性作为location的key属性值，并且将historyState对象中的state属性作为state属性值
+     2. 如果没有key属性，则直接将historyState赋值给state
+
+## Switch
+
+Switch：匹配Route子元素，渲染第一个匹配到的Route
+
+实现Switch：循环Switch组件children，依次匹配每一个Route组件，当匹配到时，直接渲染，停止循环
