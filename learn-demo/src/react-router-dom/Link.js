@@ -5,7 +5,7 @@ import {parsePath} from 'history'
 
 export default function Link(props) {
 
-  
+  const {to, ...rest} = props
 
   return (
     <ctx.Consumer>
@@ -19,7 +19,7 @@ export default function Link(props) {
             loc = parsePath(props.to)
           }
           const href = value.history.createHref(loc)
-          return <a href={href} onClick={e => {
+          return <a {...rest} href={href} onClick={e => {
             e.preventDefault();
             value.history.push(loc)
           }}>
