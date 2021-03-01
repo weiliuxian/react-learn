@@ -126,7 +126,7 @@ Router组件会创建一个上下文，并且向上下文注入一些信息
 **为什么没有直接使用history对象**
 
 1. React-Router中有两种模式： hash、hisroty，如果直接使用window.history，只能支持一种模式
-2. 当使用window.history.pushState方法时，没有办法收到任何通知，将导致react无法知晓地址发生 了改变，结果导致无法重新渲染组件
+2. 当使用window.history.pushState方法时，没有办法收到任何通知，将导致react无法知晓地址发生了改变，结果导致无法重新渲染组件
 
 - push： 将某个新的地址入栈（历史记录栈）
   1. 参数1：新的地址
