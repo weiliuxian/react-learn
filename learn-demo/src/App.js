@@ -7,6 +7,7 @@ import TransitionRoute from './TransitionRoute'
 export default function App(){
   return (
     <div className="main">
+      <div>redux</div>
       <Router>
         <Pages.NavBar />
         <div className="page-container">
