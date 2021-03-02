@@ -76,3 +76,29 @@ var action = {
 
 reducer： 处理器，用于根据action来处理数据，处理后的数据会被仓库重新保存
 
+
+
+### action
+
+- action是一个plain-object（平面对象）
+  1. 它的____proto____指向的是object.prototype
+- 通常使用payload属性表示附加数据（没有强制要求）
+- action中必须有type属性，该属性用于描述操作的类型
+  1. 但是没有对type的类型做出要求
+- 在大型项目，由于操作类型非常多，为了避免硬编码（hard code），会将action的类型存放到一个或一些单独的文件中（样板代码）
+- 为了方便传递action，通常会使用action创建函数（action creater）来创建action
+  1. action创建函数应为无副作用的纯函数
+     1. 不能以任何形式改动参数
+     2. 不可以有异步
+     3. 不可以对外部环境中数据造成影响
+- 为了方便利用action创建函数来分发（触发）action，redux提供了一个函数```bindActionCreator```，该函数用于增强action创建函数的功能，使它不仅可以创建action，并且创建后可以自动分发
+
+```js
+// 第一个参数，是action创建函数合并的对象，第二个参数是仓库的dispatch函数
+// 得到一个新的对象，新对象中的属性与第一个参数的属性名一致
+const boundActions = bindActionCreators(numberAction,store.dispatch)
+// 得到一个increase action,并直接分发
+boundActions.getIncreaseAction()
+```
+
+<img src=".\bindAction.png" alt="bindAction"  />
