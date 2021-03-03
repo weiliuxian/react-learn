@@ -76,9 +76,7 @@ var action = {
 
 reducer： 处理器，用于根据action来处理数据，处理后的数据会被仓库重新保存
 
-
-
-### action
+## action
 
 - action是一个plain-object（平面对象）
   1. 它的____proto____指向的是object.prototype
@@ -102,3 +100,73 @@ boundActions.getIncreaseAction()
 ```
 
 <img src=".\bindAction.png" alt="bindAction"  />
+
+## reducer
+
+Reducer是用于改变数据的函数
+
+- 一个数据仓库，有且仅有一个reducer，并且通常情况下，一个工程只有一个仓库，因此一个系统只有一个reducer
+
+- 为了方便管理，通常会将reducer放到单独的文件中
+
+- reducer被调用的时机：
+
+  - 通过store.dispatch，分发了一个action，此时，会调用reducer
+
+  - 当创建一个store的时候，会调用一次reducer
+
+    - 可以利用这一点，用reducer进行初始化状态
+
+    - 创建仓库时，不传递任何默认状态
+
+    - 将reducer的参数state设置一个默认值
+
+      ```js
+      const store = createStore(reducer) 
+      
+      export default function reducer(state = 10, action){
+        console.log('reducer运行了', state, action)
+        // 返回一个新的状态
+        if(action.type === actionTypes.Increase){
+            return state + 1;
+        }else if(action.type === actionTypes.Decrease){
+            return state - 1;
+        }else if(action.type === actionTypes.SET){
+            return action.payload
+        }
+        
+        return state ;
+        
+      }
+      ```
+
+- reducer内部通常使用switch来判断type值
+
+  ```js
+    switch (action.type) {
+      case actionTypes.Increase:
+        return state + 1;
+      case actionTypes.Decrease:
+        return state - 1;
+      case actionTypes.SET:
+        return action.payload;
+      default:
+        return state ;
+    }
+  ```
+
+- **reducer必须是一个没有副作用的纯函数**
+
+  1. 为什么需要纯函数？
+     1. 纯函数有利于测试和调试
+     2. 有利于还原数据
+     3. 有利于将来和react结合时的优化
+  2. 具体要求
+     1. 不能改变参数，因此若要让状态变化，必须得到一个新的状态
+     2. 不能有异步
+     3. 不能对外部环境造成影响（例如：cookie、localStorage）
+
+- 由于在大中型项目中，操作比较复杂，数据结构也比较复杂，因此，需要对reducer进行细分
+
+
+
