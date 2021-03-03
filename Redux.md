@@ -76,7 +76,11 @@ var action = {
 
 reducer： 处理器，用于根据action来处理数据，处理后的数据会被仓库重新保存
 
-## action
+
+
+## Redux三大组成部分
+
+### action
 
 - action是一个plain-object（平面对象）
   1. 它的____proto____指向的是object.prototype
@@ -101,7 +105,7 @@ boundActions.getIncreaseAction()
 
 <img src=".\bindAction.png" alt="bindAction"  />
 
-## reducer
+### reducer
 
 Reducer是用于改变数据的函数
 
@@ -168,5 +172,40 @@ Reducer是用于改变数据的函数
 
 - 由于在大中型项目中，操作比较复杂，数据结构也比较复杂，因此，需要对reducer进行细分
 
+  1. redux提供了方法```combineReducers```，可以帮助我们更加方便的合并reducer
+  2. combineReducers: 合并reducer，得到一个新的reducer，该新的reducer管理一个对象，该对象中的每一个属性交给对应的reducer管理
 
+### store
+
+store： 用于保存数据
+
+通过createStore方法创建的对象
+
+该对象的成员：
+
+- dispatch：分发一个action
+
+- getState：得到仓库中的当前状态
+
+- replaceReducer：替换掉当前的reducer
+
+- subscribe：注册一个监听器，监听器是一个无参函数，该分发一个action之后，会运行注册的监听器。该函数会返回一个函数，用于取消监听
+
+  
+
+## 实现createStore
+
+返回一个对象
+
+该对象的成员：
+
+- dispatch：分发一个action
+
+- getState：得到仓库中的当前状态
+
+- subscribe：注册一个监听器，监听器是一个无参函数，该分发一个action之后，会运行注册的监听器。该函数会返回一个函数，用于取消监听
+
+  
+
+## 实现bindActionCreators
 
