@@ -1,6 +1,4 @@
 
-
-
 export default function(actionCreators, dispatch){
     if(typeof actionCreators === 'function'){
         return getAutoDispatchCreator(actionCreators, dispatch)

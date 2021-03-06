@@ -1,28 +1,22 @@
+import actionTypes from './utils/actionTypes'
+import isPlainObject from './utils/isPlainObject'
 
-/**
- * 判断某个对象是否是一个平面对象
- * @param {*} obj 
- */
-function isPlainObject(obj){
-    if(typeof obj !== 'object'){
-        return false;
-    }
-    return Object.getPrototypeOf(obj) === Object.prototype;
-}
-
-/**
- * 得到一个指定长度的随机字符串
- * @param {*} length 
- */
-function getRandomString(length){
-    return (Math.random()).toString(36).substr(2,length).split('').join('.')
-}
 /**
  * 
  * @param {function} reducer 
  * @param {*} defaultState 默认状态值
  */
-export default function(reducer, defaultState){
+export default function createStore(reducer, defaultState, enhanced){
+    //enhanced 表示applymiddleware返回的函数
+    if(typeof defaultState === 'function'){
+        enhanced = defaultState
+        defaultState = undefined
+    }
+
+    if(typeof enhanced === 'function'){
+        // 进入applymiddleware的处理逻辑
+        return enhanced(createStore)(reducer,defaultState)
+    }
 
     let currentReducer = reducer,  // 当前使用的reducer
         currentState = defaultState; // 当前仓库中状态
@@ -30,6 +24,7 @@ export default function(reducer, defaultState){
     const listeners = []; //记录所有的监听器
 
     function dispatch(action){
+       
         // 验证action是否是平面对象
         if(!isPlainObject(action)){
             throw new TypeError('action must be a plain object')
@@ -64,7 +59,7 @@ export default function(reducer, defaultState){
 
     // 创建仓库时，需要分发一次初始的action
     dispatch({
-        type: '@@redux/INIT'+ getRandomString(7)
+        type: '@@redux/INIT'+ actionTypes.INIT(7)
     })
 
     return {

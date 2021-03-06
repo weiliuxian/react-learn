@@ -109,6 +109,12 @@ boundActions.getIncreaseAction()
 
 Reducer是用于改变数据的函数
 
+入参：state（当前状态）、action
+
+返回值：新的状态（即调用对应的方法后返回的新的数据）
+
+
+
 - 一个数据仓库，有且仅有一个reducer，并且通常情况下，一个工程只有一个仓库，因此一个系统只有一个reducer
 
 - 为了方便管理，通常会将reducer放到单独的文件中
@@ -195,11 +201,23 @@ store： 用于保存数据
 
 ## 实现createStore
 
-返回一个对象
+入参： reducer、默认值（可选）
+
+- 第二个参数如果是一个函数代表使用中间件，applyMiddleware(中间件)
+- 第二个参数不是函数，代表默认值，那么第三个参数如果使用了applyMiddleware(中间件)，也代表使用中间件
+
+返回值：一个对象
 
 该对象的成员：
 
 - dispatch：分发一个action
+
+  ```
+  入参： action
+  验证是否是平面对象、是否有type属性
+  调用当前的reducer函数，	更新当前状态
+  运行所有的监听器
+  ```
 
 - getState：得到仓库中的当前状态
 
@@ -208,4 +226,172 @@ store： 用于保存数据
   
 
 ## 实现bindActionCreators
+
+参数： actionCreators（action创建函数的函数/对象集合）、store的dispatch方法
+
+1. 如果传递的是一个函数，返回值也是函数，该函数内部自动调用dispatch方法
+2. 如果传递的是一个对象，返回的也是对象，该对象的属性名和传递的参数对象的属性名一致，属性值是一个调用了disptch方法的函数
+
+返回值：函数/对象
+
+功能： 创建action的同时，绑定dispatch方法，在调用action创建函数的时候自动完成分发
+
+## 实现combineReducers
+
+入参：reducers（reducer集合对象）
+
+返回值：reducer函数
+
+组装reducers，返回一个reducer，数据使用一个对象表示，对象的属性名和传递的参数对象保持一致
+
+```
+
+判断是否是一个对象，且是平面对象
+循环运行每个reducer，判断reducer的返回结果是否不是undefined
+返回一个reducer函数，该reducer函数内部循环调用入参的每个reducer，返回一个新的状态
+
+```
+
+## Redux中间件（Middleware）
+
+中间件：类似于插件，可以在不影响原本功能、并且不改动原本代码的基础上，对其功能进行增强。在Redux中，中间件主要用于增强dispatch函数。
+
+实现Redux中间件的基本原理，是更改仓库中的dispatch函数。
+
+示例：
+
+```react
+
+// 输出之前的状态，输出新的状态，输出触发的action
+
+const oldDispatch = store.dispatch;
+store.dispatch = function(action){
+    console.log('旧数据',store.getState())
+    console.log('action',action)
+    oldDispatch(action)
+    console.log('新数据',store.getState())
+    console.log('')
+}
+
+```
+
+Redux中间件书写：
+
+- 中间件本身是一个函数，该函数接收一个store参数，表示创建的仓库，该仓库并非一个完整的仓库对象，仅包含getState，dispatch，该函数运行的时间，是在仓库创建之后运行
+
+  1. 由于创建仓库后需要自动运行设置的中间件函数，因此，需要在创建仓库时告诉仓库有哪些中间件，需要使用applyMiddleware函数，将函数的返回结果作为CreteStore的第二个参数或第三个参数
+
+     ```js
+     const store = createStore(reducer,applyMiddleware(loggerMiddleware)) 
+     ```
+
+- 中间件函数必须返回一个dispatch创建函数
+
+  ```js
+  
+  function logger2(store){
+      return function(next){
+          // 下面的函数是最终要应用的dispatch
+          return function (action){
+              console.log('旧数据',store.getState())
+              console.log('action',action)
+              next(action)
+              console.log('新数据',store.getState())
+              console.log('')
+          }
+      }
+  }
+  
+  简写模式
+  const logger1 = store => next => action => {
+      console.log('旧数据',store.getState())
+      console.log('action',action)
+      next(action)
+      console.log('新数据',store.getState())
+      console.log('')
+  }
+  
+  ```
+
+  ```react
+  
+  const store = createStore(reducer,applyMiddleware(logger1,logger2)) 
+  过程：
+  const dispatch1 = logger1(store)
+  const dispatch2 = logger2(store)
+  
+  dispatch1(dispatch2)
+  
+  分别执行logger1、logger2，得到两个dispatch函数，dispacth1和dispatch2函数，
+  然后把dispatch2函数作为参数传递给dispatch1，
+  执行dispatch1函数，后面会依次执行传递的中间件
+  
+  ```
+
+中间件的应用方式：
+
+- 方式1
+
+  ```js
+  const store = createStore(reducer,applyMiddleware(loggerMiddleware) 
+  ```
+
+- 方式2
+
+  ```js
+  const store = applyMiddleware(logger1,logger2)(createStore)(reducer，默认值)
+  ```
+
+  applyMiddleware函数，用于记录有哪些中间件，它会返回一个函数
+
+  - 该函数用于记录创建仓库的方法，传递createStore创建store， 然后又返回一个函数,
+    - 该函数可以传递创建store时的参数
+
+
+
+### 实现applyMiddleware
+
+middleware的本质，是一个调用后可以得到dispatch创建函数的函数
+
+compose：函数组合，将一个数组中的函数进行组合，形成一个新的函数，该函数调用时，实际上是反向调用之前组合的函数
+
+
+
+## 中间件
+
+### redux-logger
+
+### 利用中间件处理副作用
+
+#### redux-thunk
+
+thunk允许action是一个带有副作用的函数，当action是一个函数被分发时，thunk会阻止action继续向后移交，会直接调用函数
+
+thunk会向函数中传递三个参数：
+
+- dispatch：来自于store.dispatch
+- getState:  来自于store.getState
+- extra：来自于用户设置的额外参数
+
+```js
+export const fetchUsers = () => {
+  // 由于thunk的存在，允许action是一个带有副作用的函数
+  return async (dispatch, getState, extra) => {
+    dispatch(createSetLoadingAction(true))
+    const users = await getAllStudents
+    dispatch(createSetUsersAction(users))
+    dispatch(createSetLoadingAction(false))
+  }
+}
+
+store.dispatch(fetchUsers())
+```
+
+
+
+#### redux-promise
+
+#### redux-sage
+
+
 
