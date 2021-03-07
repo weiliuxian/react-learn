@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <script>
+
+    // 迭代器创建函数，返回一个迭代器
+    // function creatIterator(total){
+    //   var i = 1;
+    //   return {
+    //     next(){
+    //       var obj = {  // 当前这一次迭代到的数据
+    //         value: i > total ? undefined : i,
+    //         done: i > total
+    //       }
+    //       i++
+    //       return obj;
+    //     }
+    //   }
+    // }
+
+    // 迭代器
+    // var iterator = {
+    //   total: 3, // 可迭代三次
+    //   i: 1, // 当前的迭代次数
+    //   next(){
+    //     var obj = {  // 当前这一次迭代到的数据
+    //       value: this.i > this.total ? undefined : this.i,
+    //       done: this.i > this.total
+    //     }
+    //     this.i++
+    //     return obj;
+    //   }
+    // }
+
+    // 无限迭代
+    // var iterator = {
+    //   next(){
+    //     var obj = {
+    //       value: Math.random(),
+    //       done: false
+    //     }  
+    //     return obj;    
+    //   }
+    // }
+
+
+    //一个无限的斐波拉契数列 1 1 2 3 5 8...
+    // var iterator = {
+    //     a: 1,
+    //     b: 1,
+    //     curIndex: 1, // 当前取到斐波拉契数列的第几位，从1开始
+    //     next(){
+    //       if(this.curIndex === 1 || this.curIndex === 2){
+    //           this.curIndex ++
+    //           return {
+    //             value: 1,
+    //             done: false
+    //           } 
+    //       }
+    //       var c = this.a + this.b;
+    //       this.curIndex++
+    //       this.a = this.b
+    //       this.b = c
+    //       return {
+    //         value: c,
+    //         done: false
+    //       }
+    //     }
+    //   }
+
+    //   for (let index = 0; index < 5; index++) {
+    //     console.log(iterator.next().value)
+    //   }
+
+      // 一个一个迭代，知道不能迭代为止
+      // var iterator = creatIterator(100)
+      // var next = iterator.next();
+      // while(!next.done){
+      //   // 若当前迭代的数据不是迭代器的结束
+      //   console.log(next.value)
+      //   next = iterator.next()
+      // }
+
+
+      // 创建一个用于迭代数组的迭代器
+      function createArrayIterator(arr){
+        var i = 0;
+        return {
+          next(){
+            var obj =  {
+              value: arr[i],
+              done: i >= arr.length
+            }
+            i++;
+            return obj;
+          }
+        }
+      }
+
+      // var iterator = createArrayIterator([2,3,4,4,5])
+
+      // obj满足可迭代协议，obj可被迭代
+      var obj = {
+        [Symbol.iterator]:  function creatIterator(){
+          var total= 3, i = 1;
+          return {
+            next(){
+              var obj = {  // 当前这一次迭代到的数据
+                value: i > total ? undefined : i,
+                done: i > total
+              }
+              i++
+              return obj;
+            }
+          }
+        }
+      }
+
+      var iterator = obj[Symbol.iterator]()
+      var result = iterator.next()
+      while(!result.done){
+        const item = result.value
+        console.log(item)  // 执行循环体，循环内部的逻辑代码
+        result = iterator.next()
+      }
+
+      for (const item of obj) {
+        console.log(item)
+      }
+
+
+      
+
+
+  </script>
+</body>
+</html>

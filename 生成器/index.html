@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <script>
+    // 生成器函数
+    function* createGennerator(){
+      console.log('生成器函数的函数体-开始')
+      let result = yield 1;  // 将1作为第一次的迭代的值，假设第二调用next方法时传递了参数abc，即next(abc),则result变量第一次的值为abc，以此类推
+      result = yield* g2(); // result为g2函数的返回值
+      console.log('生成器函数的函数体-运行1', result)
+      result = yield 2;
+      console.log('生成器函数的函数体-运行2', result)
+      result = yield 3;
+      console.log('生成器函数的函数体-运行3', result)
+      return 4
+    } 
+    // var generator = createGennerator()
+
+    // var result = generator.next()
+    // while(!result.done){
+    //   const val = result.value;
+    //   result = generator.next(val)
+    // }
+
+    function* createArrayIterator(arr){
+      for (const item of arr) {
+        console.log('item',item)
+        yield item;
+      }
+    }
+
+
+    function asyncGetData(){
+      return new Promise(resolve => {
+        setTimeout(()=>{
+          resolve('jj')
+        },1000)
+      })
+    }
+
+    // 通用函数：运行一个生成器任务
+    function run(generatorFn){
+      const generator = generatorFn()
+      next()
+      // 封装了generator的next方法，进行下一次迭代
+      function next(nextvalue){
+        const result = generator.next(nextvalue)
+        if(result.done){
+          return
+        }
+        var value = result.value
+        if(typeof value.then === 'function' ){
+          value.then(data => next(data))
+        }else{
+          next(value)
+        }
+      }
+    }
+
+    run(task)
+
+    function* task(){
+      console.log('开始获取数据。。。')
+     const resut = yield asyncGetData();
+     console.log('获取到数据1',resut)
+     const resut1 = yield asyncGetData();
+     console.log('获取到数据2',resut1)
+     const resut3 = yield 3;
+     console.log('获取到数据3',resut3)
+    }
+    
+
+    function* g2(){
+      console.log('g2-开始')
+      let result = yield 'g1';
+      console.log('g2-运行1')
+      result = yield 'g2';
+    }
+
+
+
+
+
+
+  </script>
+</body>
+</html>

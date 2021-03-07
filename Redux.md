@@ -387,11 +387,382 @@ export const fetchUsers = () => {
 store.dispatch(fetchUsers())
 ```
 
-
-
 #### redux-promise
+
+如果action是一个promise，则会等待promise完成，将完成的结果作为action触发，如果action不是一个promise，则判断payload是否是一个promise，如果是，等待promise完成，然后将得到的结果作为payload的值触发
+
+```js
+export const fetchUsers2 = () => {
+  return new Promise((resolve,reject) => {
+    setTimeout(()=>{
+      const action = createAddUserAction({id: 6786, name: 'dfs', age: 89})
+      resolve(action)
+    },1000)
+  })
+}
+
+export async function fetchUsers3(){
+  const users = await getAllStudents
+  return createSetUsersAction(users)
+}
+
+export async function fetchUsers3(){
+  return {
+    type: SETUSER111,
+    payload: getAllStudents().then(resp => ({
+      datas: resp.datas,
+      total: resp.cont
+    }))
+  }
+}
+
+```
 
 #### redux-sage
 
+> 中文文档地址： https://redux-saga-in-chinese.js.org/
 
+- 纯净、强大、灵活
+- 在saga任务中，如果yield了一个普通数据，saga不做任何处理，仅仅将数据传递给yield表达式（把得到的数据放到next参数中），因此，在saga中，yield一个普通数据无意义
+- saga需要在yield后面放上一些合适的saga指令（saga effect），如果放的是指令，saga中间件会根据不同的指令进行特殊的处理，以控制整个任务的流程
+- 每个指令本质上就是一个函数，该函数调用后，会返回一个指令对象，saga会接受到该指令对象进行处理
+
+saga指令：
+
+**一旦saga任务完成（生成器函数运行完成），则saga中间件一定结束**
+
+- take指令：【阻塞】监听某个action，如果action发生了，则会进行下一个指令，take指令仅监听一次，yield得到的是完整的action对象
+- all指令：【阻塞】该函数传入一个数组，数组中放入生成器，saga会等待所有的生成器全部完成后才会进一步处理
+- takeEvery指令：不断的监听某个action，当某个action到达之后，运行一个函数，takeEvery永远不会结束，不会阻塞
+
+
+
+## 迭代器和可迭代协议
+
+解决副作用的redux中间件：
+
+> redux-thunk: 需要改动action，可接收action是一个函数
+>
+> redux-promise：需要改动action，可接受action是一个promise对象，或action.payload是一个promise对象
+>
+> 以上两个中间件，会导致action或action创建函数不再纯净 
+>
+> redux-saga将解决这样的问题，它不仅可以保持action、action创建函数、reducer的纯净，而且可以用模块化的方式解决副作用，并且功能非常强大。
+>
+> redux-saga是建立在es6的生成器基础上的，要熟练的使用saga，必须理解生成器。
+>
+> 要理解生成器，必须先理解迭代器和可迭代协议。
+
+### 迭代
+
+类似于遍历
+
+遍历：有多个数据组成的集合数据结构(map、set、array等其他类数组)，需要从该结果中依次去除数据进行某种处理。
+
+迭代：按照某种逻辑，依次取出下一个数据进行处理。
+
+### 迭代器
+
+JS语言规定：如果一个对象具有next方法，并且next方法满族一定的约束，则该对象是一个迭代器（iterator）。
+
+next方法的约束：该方法必须返回一个对象，该对象至少具有两个属性：
+
+- value:  any类型，下一个数据的值，如果done为true，通常会将value值设置为
+
+- done: 下一个数据的值，是否已经迭代完成
+
+  ```js
+  // 迭代器
+      var iterator = {
+        total: 3, // 可迭代三次
+        i: 1, // 当前的迭代次数
+        next(){
+          var obj = {  // 当前这一次迭代到的数据
+            value: this.i > this.total ? undefined : this.i,
+            done: this.i > this.total
+          }
+          this.i++
+          return obj;
+        }
+      }
+  ```
+
+  
+
+通过迭代器的next方法，可以依次取出数据，并可以根据返回的done属性判定书否迭代结束
+
+```js
+// 无限迭代
+    var iterator = {
+      next(){
+        var obj = {
+          value: Math.random(),
+          done: false
+        }  
+        return obj;    
+      }
+    }
+```
+
+```js
+//一个无限的斐波拉契数列 1 1 2 3 5 8...
+    var iterator = {
+        a: 1,
+        b: 1,
+        curIndex: 1, // 当前取到斐波拉契数列的第几位，从1开始
+        next(){
+          if(this.curIndex === 1 || this.curIndex === 2){
+              this.curIndex ++
+              return {
+                value: 1,
+                done: false
+              } 
+          }
+          var c = this.a + this.b;
+          this.curIndex++
+          this.a = this.b
+          b = c
+          return {
+            value: c,
+            done: false
+          }
+        }
+      }
+     for (let index = 0; index < 5; index++) {
+        console.log(iterator.next().value)
+      }
+```
+
+```js
+// 一个一个迭代，直到不能迭代为止
+var next = iterator.next();
+while(!next.done){
+    // 若当前迭代的数据不是迭代器的结束
+    console.log(next.value)
+    next = iterator.next()
+}
+```
+
+### 迭代器创建函数 iterator creator
+
+它是指一个函数，调用该函数后，返回一个迭代器，则该函数称之为迭代器创建函数，可以简称为迭代器函数
+
+```js
+// 迭代器创建函数，返回一个迭代器
+    function creatIterator(total){
+      var i = 1;
+      return {
+        next(){
+          var obj = {  // 当前这一次迭代到的数据
+            value: i > total ? undefined : i,
+            done: i > total
+          }
+          i++
+          return obj;
+        }
+      }
+    }
+
+// 使用
+    var iterator = creatIterator(100)
+    var next = iterator.next();
+    while(!next.done){
+        // 若当前迭代的数据不是迭代器的结束
+        console.log(next.value)
+        next = iterator.next()
+    }
+```
+
+### 可迭代协议
+
+es6中出现了for-of循环，该循环就是用于迭代某个对象的，因此for-of循环要求对象必须是可迭代的（对象必须满足可迭代协议）
+
+可迭代协议：用于约束一个对象，如果一个对象满足下面的规范，则该对象满足可迭代协议，也称之为该对象是可迭代的
+
+可迭代协议的约束如下：
+
+1. 对象必须有一个知名符号属性（Symbol.iterator）
+2. 该属性必须是一个无参的迭代器创建函数
+
+```js
+// obj满足可迭代协议，obj可被迭代
+var obj = {
+    [Symbol.iterator]:  function creatIterator(){
+        var total= 3, i = 1;
+        return {
+            next(){
+                var obj = {  // 当前这一次迭代到的数据
+                    value: i > total ? undefined : i,
+                    done: i > total
+                }
+                i++
+                return obj;
+            }
+        }
+    }
+}
+```
+
+### forof循环原理
+
+调用对象的[Symbol.iterator]方法，得到一个迭代创建函数，不断调用next方法，只要返回的done为false，则将返回的value传递给变量，然后进入循环体执行一次
+
+```js
+ 
+for (const item of obj) {
+     console.log(item)
+ }
+
+// 原理
+ var iterator = obj[Symbol.iterator]()
+ var result = iterator.next()
+ while(!result.done){
+     const item = result.value
+     console.log(item)  // 执行循环体，循环内部的逻辑代码
+     result = iterator.next()
+ }
+    
+```
+
+## 生成器 generator
+
+生成器：由构造函数Generator创建的对象，该对象既是一个迭代器，同时，又是一个可迭代对象（满足可迭代协议的对象）
+
+**Generator构造函数，不提供给开发者者使用，仅作为js引擎内部使用**
+
+### generator function
+
+生成器函数（生成器创建函数）： 该函数用于创建生成器。
+
+es6新增了一个特殊的函数，叫做生成器函数，只要在函数名与function关键字之间加上一个*号，则该函数会自动返回一个生成器
+
+```js
+// 生成器函数
+function* createGennerator(){} 
+```
+
+生成器函数的特点：
+
+1. 调用生成器函数会返回一个生成器，而不是执行函数体（因为生成器函数的函数体执行受到生成器的控制）
+
+2. 每当调用了生成器的next方法，生成器的函数体会从上一次yield的位置（或开始位置）运行到下一个yield
+
+   1. yield关键字只能在生成器内部使用，不可以在普通函数内部使用
+   2. 它表示暂停，并返回一个当前迭代的对象
+   3. 如果没有下一个yield，到了函数结束，则生成器的next方法得到的结果中的done为true
+
+3. yield关键字后面的表达式返回的数据，会作为当前迭代的数据
+
+4. 生成器函数的返回值，会作为迭代结束时的value
+
+   1. 但是如果在结束后，仍然反复调用next，则value值为undefined
+
+5. 生成器调用next的时候可以传递参数，该参数会作为生成器函数体上一次yield表达式的值
+
+   1. 生成器第一次调用next函数的时候，传递参数无意义
+
+   ```js
+   // 生成器函数
+   function* createGennerator(){
+       console.log('生成器函数的函数体-开始')
+       let result = yield 1;  // 将1作为第一次的迭代的值，假设第二调用next方法时传递了参数abc，即next(abc),则result变量第一次的值为abc，以此类推
+       console.log('生成器函数的函数体-运行1', result)
+       result = yield 2;
+       console.log('生成器函数的函数体-运行2', result)
+       result = yield 3;
+       console.log('生成器函数的函数体-运行3', result)
+       return 4
+   } 
+   
+   var generator = createGennerator()
+   
+   // 循环取值
+   var result = generator.next()
+   while(!result.done){
+       const val = result.value;
+       result = generator.next(val)
+   }
+   ```
+
+   ```js
+   // 异步请求数据
+    function asyncGetData(){
+        return new Promise(resolve => {
+            setTimeout(()=>{
+                resolve('jj')
+            },1000)
+        })
+    }
+   
+   // 任务生成器
+   function* task(){
+       console.log('开始获取数据。。。')
+       const resut = yield asyncGetData();
+       console.log('获取到数据1',resut)
+       const resut1 = yield asyncGetData();
+       console.log('获取到数据2',resut1)
+       const resut3 = yield 3;
+       console.log('获取到数据3',resut3)
+   }
+   
+   // 通用函数：运行一个生成器任务
+   function run(generatorFn){
+       const generator = generatorFn()
+       next()
+       // 封装了generator的next方法，进行下一次迭代
+       function next(nextvalue){
+           const result = generator.next(nextvalue)
+           if(result.done){
+               return
+           }
+           var value = result.value
+           if(typeof value.then === 'function' ){
+               value.then(data => next(data))
+           }else{
+               next(value)
+           }
+       }
+   }
+   
+   run(task)
+   
+   // 执行结果
+   开始获取数据。。。
+   获取到数据1 jj
+   获取到数据2 jj
+   获取到数据3 3
+   ```
+
+6. 生成器带有一个throw方法，该方法与next的效果相同，唯一的区别在于：
+
+   1. next方法传递的参数会被返回成一个正常的值
+   2. throw方法传递的参数是一个错误对象，会导致生成器函数内部发生一个错误
+
+7. 生成器带有一个return方法，该方法会直接结束生成器函数
+
+8. 如需要在生成器内部调用其他生成器，注意： 如果直接调用的到的是一个生成器，如果加入*号调用，则进入其生成器内部执行
+
+   ```js
+    function* g2(){
+        console.log('g2-开始')
+        let result = yield 'g1';
+        console.log('g2-运行1')
+        result = yield 'g2';
+        return 'g2结束'
+    }
+   
+    function* createGennerator(){
+        console.log('生成器函数的函数体-开始')
+        let result = yield 1; 
+        result = yield* g2(); // result为g2函数的返回值 g2结束
+        console.log('生成器函数的函数体-运行1', result)
+        result = yield 2;
+        console.log('生成器函数的函数体-运行2', result)
+        result = yield 3;
+        console.log('生成器函数的函数体-运行3', result)
+        return 4
+    } 
+   ```
+
+   
 

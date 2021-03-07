@@ -5,15 +5,21 @@ import reducer from './reducer'
 import {createAddUserAction, createDeleteUserAction} from './action/usersAction'
 import {v1 as uuid} from 'uuid'
 import logger from 'redux-logger'
-import thunk from 'redux-thunk'
+// import thunk from 'redux-thunk'
+import createSagaMiddleware from 'redux-saga'
+import rootSaga from './saga'
 
 // 约定action的格式：{type: '操作类型', payload:附加数据}
+const sagaMid = createSagaMiddleware(); // 创建一个saga的中间件
+
 export default createStore(reducer,
     applyMiddleware(
-        thunk,
+        sagaMid,
         logger
     )
 )  
+
+sagaMid.run(rootSaga)// 启动saga任务
 
 
 // const actionCreators = {

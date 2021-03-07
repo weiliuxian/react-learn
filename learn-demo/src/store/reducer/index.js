@@ -1,5 +1,6 @@
 import loginUser from './LoginUser'
 import users from './users'
+import count from './counter'
 import {combineReducers} from 'redux'
 // import {combineReducers} from 'redux'
 
@@ -13,5 +14,6 @@ import {combineReducers} from 'redux'
 
 export default combineReducers({
   loginUser,
-  users
+  users,
+  count
 })
