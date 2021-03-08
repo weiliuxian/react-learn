@@ -431,9 +431,54 @@ saga指令：
 
 **一旦saga任务完成（生成器函数运行完成），则saga中间件一定结束**
 
+**指令前面必须使用yield，以确保该指令的返回结果被saga控制**
+
 - take指令：【阻塞】监听某个action，如果action发生了，则会进行下一个指令，take指令仅监听一次，yield得到的是完整的action对象
+
 - all指令：【阻塞】该函数传入一个数组，数组中放入生成器，saga会等待所有的生成器全部完成后才会进一步处理
+
 - takeEvery指令：不断的监听某个action，当某个action到达之后，运行一个函数，takeEvery永远不会结束，不会阻塞
+
+- delay指令：【阻塞】阻塞指定的毫秒数
+
+- put指令：相当于dispatch一个action，用于重新触发action
+
+- call指令：【可能阻塞】用于副作用（通常是异步）函数调用
+
+  ```js
+  function* asyncGetAllStudents(){
+    yield put(createSetLoadingAction(true))
+    // 当saga发现得到的结果是一个promise对象，它会自动等待该promise完成
+    // 当完成之后，会把完成的结果作为值传递到下一个next
+    // 如果promise对象被拒绝，saga会使用generator.throw抛出一个错误
+    const result = yield call(getAllStudents)
+    console.log('result',result)
+    yield put(createSetUsersAction(result))
+    yield put(createSetLoadingAction(false))
+  }
+  // 数组第一项是绑定的this指向，第二项是异步函数， 后面是参数
+  call(['asd', getAllStudents],参数1，参数2.。。。)
+  call(getAllStudents,参数1，参数2.。。。)
+  call(getAllStudents)
+  call({
+      context: 'abc', //this指向
+      fn: getAllStudents // 异步函数
+  })
+  ```
+
+- apply指令：【可能阻塞】用于副作用（通常是异步）函数调用，区别是调用时传参不同
+
+  ```js
+  const result = yield apply(null,getAllStudents)
+  ```
+
+- select指令：用于得到当前仓库中的数据
+
+  ```js
+   const state = yield select(state => state.users)  // 如果不传函数作为筛选，返回的是整个仓库的数据
+  ```
+
+- cps指令： 【可能阻塞】用于调用那些传统的回调方式的异步函数
 
 
 

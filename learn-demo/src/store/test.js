@@ -3,6 +3,7 @@ import store from './index'
 import {v1 as uuid} from 'uuid'
 // import {getAllStudents} from '../services/student'
 import {increase,decrease, asyncIncrease, asyncDecrease} from './action/counter'
+import {fetchStudentsAction} from './action/usersAction'
 
 window.increase = function(){
   store.dispatch(increase())
@@ -18,6 +19,10 @@ window.asyncIncrease = function(){
 
 window.asyncDecrease = function(){
   store.dispatch(asyncDecrease())
+}
+
+window.fetchStudentsAction = function(){
+  store.dispatch(fetchStudentsAction())
 }
 // store.dispatch(fetchUsers())
 // getAllStudents().then(res=>{

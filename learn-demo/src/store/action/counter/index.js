@@ -4,6 +4,7 @@ export const actionTypes = {
   decrease: Symbol('decrease'),
   asyncIncrease: Symbol('async-increase'),
   asyncDecrease: Symbol('async-decrease'),
+  fetchStudents: Symbol('fetchStudents'),
 }
 
 export function increase(){

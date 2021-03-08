@@ -5,9 +5,14 @@ export const DELETEUSER = Symbol('delete-user')
 export const UPDATEUSER = Symbol('update-user')
 export const SETUSER = Symbol('set-user')
 export const SETLOADING = Symbol('set-loading')
+export const fetchStudents = Symbol('fetchStudents')
 
 
-
+export function fetchStudentsAction(){
+  return {
+    type: fetchStudents
+  }
+}
 
 export const createAddUserAction = (user) => ({
   type: ADDUSER,
