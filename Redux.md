@@ -480,6 +480,46 @@ saga指令：
 
 - cps指令： 【可能阻塞】用于调用那些传统的回调方式的异步函数
 
+- fork指令：用于开启一个新的任务，该任务不会阻塞，该函数需要传递一个生成器函数，返回值是一个对象，类型Task
+
+  ```js
+  yield takeEvery(actionTypes.asyncIncrease, asyncIncrease)
+  yield fork(asyncIncrease)
+  ```
+
+- cancel指令：用于取消一个或多个任务，实际上，取消的实现原理，是利用generator.return， cancel可以不传递参数，此时表示取消当前任务线
+
+- takeLatest：功能和takeEvery一致，只不过，会自动取消掉之前开启的任务
+
+  ```js
+  
+  function* autoIncreaseFn(){
+    let task;
+    while(true){
+      yield take(actionTypes.autoIncrease)
+      if(task){
+        yield cancel(task)
+      }
+      task = yield fork(function* (){
+        while(true){
+          yield delay(2000)
+          yield put(increase())
+        }
+      })
+    }
+  }
+  
+  yield fork(autoIncreaseFn)
+  
+  // 这句代码功能等同上面代码
+  yield takeLatest(actionTypes.autoIncrease,autoIncreaseFn)
+  
+  ```
+
+- cancelled指令：判断当前任务线是否被取消
+
+- race指令：【阻塞】竞赛，可以传递多个指令，当其中任何一支指令结束后，会直接结束，与Promise.race类似，返回的结果，是最先完成的指令结果，并且，该函数会自动取消其他的任务
+
 
 
 ## 迭代器和可迭代协议
@@ -810,4 +850,94 @@ function* createGennerator(){}
    ```
 
    
+
+## redux-actions
+
+> 官方文档： https://redux-actions.js.org/
+
+> 该库用于简化action-types，action-creator以及reducer
+
+### createAction(s)
+
+#### createAction
+
+该函数用于帮助你创建一个action创建函数（action creator）
+
+```js
+export const increase = createAction(actionTypes.increase)  
+// 上面的increase得到的就是一个action创建函数，如下
+
+ function increase(){
+  return {
+    type: actionTypes.increase
+  }
+}
+
+
+// 有paylod的情况，需要传递一个函数，函数返回需要更改的值
+// 第三个参数是形成一个meta，表示附带信息
+export const add = createAction(actionTypes.add, number => number，function(){})
+```
+
+#### createActions
+
+该函数用于帮助创建多个action创建函数
+
+```js
+
+export const {increase, decrease, asyncDecrease,asyncIncrease,add,autoIncrease,stopAutoIncrease} = createActions({
+  INCREASE: null,
+  DECREASE: null,
+  ASYNC_INCREASE: null,
+  ASYNC_DECREASE: null,
+  AUTOINCREASE: null,
+  STOPAUTOINCREASE: null,
+  ADD: number => number
+})
+
+// 得到的是一个小驼峰命名的对象
+{
+    increase： fn(),
+        ....,
+    add: fn(number)
+}
+
+```
+
+### handleAction(s)
+
+#### handleAction
+
+简化针对单个reducer类型的reducer处理，当它匹配到对应的action类型 后，会执行对应的函数
+
+```js
+
+import {increase} from '../../action/counter'
+
+function(state = 10, {type, payload}){
+  switch (type) {
+    case actionTypes.increase:
+      return state + 1;
+    
+    default:
+      return state;
+  }
+}
+// 以下代码等同于上面代码， 参数1是action-type，参数2是数据处理函数，参数3是默认值，自动匹配action
+const reducer = handleAction('INCREASE', (state, action) => {
+  return state + 1;
+}, 10)
+
+// 参数1还可以有别的写法
+// createActions里面导出的action创建函数，该函数有一个toString方法，可以得到对应的action-type
+// 避免硬编码
+const reducer = handleAction(increase, (state, action) => {
+  return state + 1;
+}, 10)
+
+```
+
+#### handleActions
+
+简化针对多个action类型的reducer处理
 

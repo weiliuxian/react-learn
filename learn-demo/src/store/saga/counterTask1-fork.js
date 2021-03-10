@@ -1,4 +1,4 @@
-import { cancel, cancelled, delay, fork, put, take,race, call } from 'redux-saga/effects'
+import { cancel, cancelled, delay, fork, put, take } from 'redux-saga/effects'
 import {actionTypes,increase,decrease, autoIncrease} from '../action/counter'
 import {getAllStudents} from '../../services/student'
 import {fetchStudents, createSetLoadingAction,createSetUsersAction} from '../action/usersAction'
@@ -7,15 +7,21 @@ import {fetchStudents, createSetLoadingAction,createSetUsersAction} from '../act
 function* autoTsk(){
   while(true){
     yield take(actionTypes.autoIncrease) // 只监听autoIncrease
-    yield race({
-      autoIncrease: call(function* (){
+    const task = yield fork(function* (){
+      try {
         while(true){
           yield delay(2000)
           yield put(increase())
         }
-      }),
-      cancel: take(actionTypes.stopAutoIncrease)
+      }
+      finally {
+        if(yield cancelled()){
+          console.log('自动增加任务取消了')
+        }
+      }
     })
+    yield take(actionTypes.stopAutoIncrease) // 转而监听stopAutoIncrease
+    yield cancel(task)
   }
 }
 
